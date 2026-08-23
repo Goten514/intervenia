@@ -1,0 +1,256 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   InterveniIA — Clinical Design System
+   Style direction: clinique · moderne · calme · confiance · premium
+   ========================================================= */
+
+@layer base {
+  :root {
+    /* Neutrals — warm-cool slate (calmer than pure slate) */
+    --background: 220 30% 99%;
+    --foreground: 222 25% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 14%;
+
+    /* Primary — clinical indigo (calm, trustworthy) */
+    --primary: 234 64% 52%;
+    --primary-foreground: 220 30% 99%;
+
+    --secondary: 220 25% 96%;
+    --secondary-foreground: 222 25% 18%;
+
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 12% 45%;
+
+    --accent: 234 70% 96%;
+    --accent-foreground: 234 64% 32%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 220 30% 99%;
+
+    --border: 220 18% 91%;
+    --input: 220 18% 91%;
+    --ring: 234 64% 52%;
+
+    /* Unified radius — 14px = "soft clinical" */
+    --radius: 0.875rem;
+
+    --sidebar-background: 220 23% 97%;
+    --sidebar-foreground: 222 20% 22%;
+    --sidebar-primary: 234 64% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 18% 93%;
+    --sidebar-accent-foreground: 222 20% 22%;
+    --sidebar-border: 220 18% 91%;
+    --sidebar-ring: 234 64% 52%;
+  }
+
+  .dark {
+    --background: 222 30% 6%;
+    --foreground: 220 25% 96%;
+
+    --card: 222 30% 8%;
+    --card-foreground: 220 25% 96%;
+
+    --popover: 222 30% 8%;
+    --popover-foreground: 220 25% 96%;
+
+    --primary: 234 80% 68%;
+    --primary-foreground: 222 30% 8%;
+
+    --secondary: 222 20% 14%;
+    --secondary-foreground: 220 25% 96%;
+
+    --muted: 222 20% 14%;
+    --muted-foreground: 220 12% 65%;
+
+    --accent: 222 20% 14%;
+    --accent-foreground: 220 25% 96%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 220 25% 96%;
+
+    --border: 222 20% 16%;
+    --input: 222 20% 16%;
+    --ring: 234 80% 68%;
+
+    --sidebar-background: 222 30% 8%;
+    --sidebar-foreground: 220 25% 96%;
+    --sidebar-primary: 234 80% 68%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 20% 14%;
+    --sidebar-accent-foreground: 220 25% 96%;
+    --sidebar-border: 222 20% 16%;
+    --sidebar-ring: 234 80% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased dark:bg-background dark:text-foreground;
+    font-feature-settings: 'cv11', 'ss01', 'ss03', 'cv02';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Premium calm background — barely-there clinical gradient wash */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(1000px circle at 0% 0%, hsl(234 80% 96% / 0.5), transparent 50%),
+      radial-gradient(900px circle at 100% 0%, hsl(262 70% 96% / 0.4), transparent 45%),
+      radial-gradient(1200px circle at 50% 100%, hsl(220 30% 97%), transparent 60%);
+  }
+
+  /* Display typography — tighter for hero/section titles */
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    letter-spacing: -0.035em;
+  }
+
+  pre, code {
+    @apply font-mono;
+  }
+
+  /* Selection — branded */
+  ::selection {
+    background: hsl(234 64% 52% / 0.18);
+    color: hsl(234 64% 28%);
+  }
+
+  /* Focus visible — unified clinical ring */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px hsl(234 64% 52% / 0.18);
+    border-radius: var(--radius);
+  }
+
+  /* Scrollbar — subtle */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(220 15% 85%);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(220 15% 75%);
+    background-clip: padding-box;
+  }
+}
+
+/* =========================================================
+   Component utilities — reusable clinical primitives
+   ========================================================= */
+
+@layer components {
+
+  /* Eyebrow label — uppercase clinical tag above headings */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-700;
+  }
+
+  /* Clinical card — the canonical surface in the app */
+  .card-clinical {
+    @apply rounded-2xl border border-slate-200/70 bg-white shadow-clinical;
+  }
+
+  .card-clinical-soft {
+    @apply rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-clinical-sm;
+  }
+
+  /* Section heading divider — gradient hairline */
+  .section-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent;
+  }
+
+  /* Brand gradient — used everywhere for primary accents */
+  .gradient-brand {
+    @apply bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-600;
+  }
+
+  .gradient-brand-soft {
+    @apply bg-gradient-to-br from-indigo-50 via-white to-violet-50;
+  }
+
+  .text-gradient-brand {
+    @apply bg-gradient-to-br from-indigo-600 to-violet-600 bg-clip-text text-transparent;
+  }
+
+  /* Chip — small clinical badge */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700;
+  }
+
+  .chip-indigo {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-indigo-200/70 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700;
+  }
+}
+
+/* =========================================================
+   Markdown / prose (existing — kept tidy)
+   ========================================================= */
+
+.markdown-editor {
+  @apply font-mono text-base leading-relaxed;
+}
+
+.markdown-preview {
+  @apply prose max-w-none prose-slate dark:prose-invert;
+}
+
+.markdown-preview pre {
+  @apply bg-secondary p-4 rounded-md overflow-x-auto;
+}
+
+.markdown-preview code {
+  @apply text-sm font-mono text-primary;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  @apply font-display font-semibold text-foreground;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  @apply my-4 ml-6;
+}
