@@ -4,13 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/local-db';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import ClientHistoryModal from './ClientHistoryModal';
 import ClientTimelineModal from './ClientTimelineModal';
 import ServiceHealthIndicator from './ServiceHealthIndicator';
-import { warmUpService } from '@/lib/service-warmup';
 
 
 interface ClientProfile {
@@ -78,13 +77,6 @@ const ClientsDashboard: React.FC = () => {
   useEffect(() => {
     loadClients();
   }, [user]);
-
-  // Global service warm-up: wake the generation backend as soon as this
-  // authenticated dashboard mounts so the generator is already warm whichever
-  // tab the intervenant opens first. Deduplicated + fire-and-forget.
-  useEffect(() => {
-    warmUpService();
-  }, []);
 
 
   const handleSubmit = async () => {

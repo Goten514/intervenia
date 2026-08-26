@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { generateIntervention } from '@/lib/ai';
-import { db } from '@/lib/local-db';
+import { supabase as db } from '@/lib/local-db';
 import { buildSecureTarget } from '@/lib/domain-config';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/contexts/PlanContext';
