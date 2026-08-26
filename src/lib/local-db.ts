@@ -22,7 +22,29 @@ const writeTable = (table: string, items: any[]) => {
 
 function makeTable(table: string) {
   return {
-    select: () => Promise.resolve({ data: readTable(table), error: null }),
+    select: (cols?: string) => ({
+      data: readTable(table),
+      error: null,
+      single: () => {
+        const all = readTable(table);
+        return { data: all[0] || null, error: null };
+      },
+      eq: (field: string, value: string) => ({
+        order: (col: string, opts?: any) => {
+          const items = readTable(table).filter((i: any) => i[field] === value);
+          items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          return { data: items, error: null };
+        },
+        maybeSingle: () => {
+          const items = readTable(table).filter((i: any) => i[field] === value);
+          return { data: items[0] || null, error: null };
+        },
+        select: (innerCols?: string) => {
+          const items = readTable(table).filter((i: any) => i[field] === value);
+          return { data: items, error: null };
+        },
+      }),
+    }),
     insert: (record: any) => {
       const items = readTable(table);
       const newItem: any = {
@@ -32,7 +54,13 @@ function makeTable(table: string) {
       };
       items.push(newItem);
       writeTable(table, items);
-      return Promise.resolve({ data: [newItem], error: null });
+      return {
+        data: [newItem],
+        error: null,
+        select: (cols?: string) => ({
+          single: () => ({ data: newItem, error: null }),
+        }),
+      };
     },
     update: (updates: any) => ({
       eq: (field: string, value: string) => {
@@ -42,44 +70,45 @@ function makeTable(table: string) {
           items[idx] = { ...items[idx], ...updates };
           writeTable(table, items);
         }
-        return Promise.resolve({ data: items[idx] || null, error: null });
+        return { data: items[idx] || null, error: null };
       },
     }),
     delete: () => ({
       eq: (field: string, value: string) => {
         const items = readTable(table).filter((i: any) => i[field] !== value);
         writeTable(table, items);
-        return Promise.resolve({ error: null });
+        return { data: null, error: null };
       },
     }),
     eq: (field: string, value: string) => ({
       order: (col: string, opts?: any) => {
         const items = readTable(table).filter((i: any) => i[field] === value);
         items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        return Promise.resolve({ data: items, error: null });
+        return { data: items, error: null };
       },
       select: (cols?: string) => {
         const items = readTable(table).filter((i: any) => i[field] === value);
-        return Promise.resolve({ data: items, error: null });
+        return { data: items, error: null };
       },
       maybeSingle: () => {
         const items = readTable(table).filter((i: any) => i[field] === value);
-        return Promise.resolve({ data: items[0] || null, error: null });
+        return { data: items[0] || null, error: null };
       },
     }),
     not: (field: string, op: string, val: any) => ({
       select: (cols?: string) => {
         const items = readTable(table).filter((i: any) => i[field] !== val);
-        return Promise.resolve({ data: items, error: null });
+        return { data: items, error: null };
       },
     }),
     or: (filters: string) => ({
       order: (col: string, opts?: any) => {
         const items = readTable(table);
         items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        return Promise.resolve({ data: items, error: null });
+        return { data: items, error: null };
       },
-      limit: (n: number) => Promise.resolve({ data: readTable(table).slice(0, n), error: null }),
+      count: 0,
+      limit: (n: number) => ({ data: readTable(table).slice(0, n), error: null }),
     }),
   };
 }
