@@ -15,8 +15,9 @@
 /** The official, secure URL where the app is fully hosted (frontend + backend). */
 export const OFFICIAL_SECURE_URL = 'https://ajvnzolrahpqohsbeyse.databasepad.com';
 
-/** Hosts whose SSL certificate is currently invalid and should redirect. */
-export const BROKEN_HOSTS = ['intervenia.ca', 'www.intervenia.ca'];
+/** Hosts whose SSL certificate is currently invalid and should redirect.
+ *  Vide : intervenia.ca fonctionne désormais en HTTPS — aucun bandeau ni redirection. */
+export const BROKEN_HOSTS: string[] = [];
 
 /** The custom domain we are trying to secure (for display / SSL test). */
 export const CUSTOM_DOMAIN = 'intervenia.ca';
