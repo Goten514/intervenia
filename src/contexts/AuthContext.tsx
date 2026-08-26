@@ -1,18 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-
-// Lightweight client-side auth that persists to localStorage.
-// This replaces the previous Supabase-based auth which was failing because
-// the configured database URL does not provide a hosted auth (GoTrue) service.
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import { auth, setToken, getToken } from '@/lib/api';
 
 export interface AuthUser {
   id: string;
   email: string;
-  user_metadata: { full_name?: string };
-  created_at: string;
-}
-
-interface StoredUser extends AuthUser {
-  password: string;
+  full_name?: string;
+  user_metadata?: { full_name?: string };
+  created_at?: string;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -23,138 +18,111 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signInWithGoogle: (email: string, fullName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  consentGiven: boolean;
+  giveConsent: () => Promise<void>;
 }
-
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const USERS_KEY = 'intervenia.users';
-const SESSION_KEY = 'intervenia.session';
-
-const readUsers = (): StoredUser[] => {
-  try {
-    const raw = localStorage.getItem(USERS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeUsers = (users: StoredUser[]) => {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-};
-
-const readSession = (): AuthUser | null => {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-const writeSession = (user: AuthUser | null) => {
-  if (user) {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  } else {
-    localStorage.removeItem(SESSION_KEY);
-  }
-};
-
-const genId = () => {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return (crypto as any).randomUUID();
-  }
-  return 'usr_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-};
+const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [consentGiven, setConsentGiven] = useState(false);
+  const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Vérifier la session au montage
   useEffect(() => {
-    const existing = readSession();
-    setUser(existing);
-    setLoading(false);
+    const init = async () => {
+      const token = getToken();
+      if (token) {
+        try {
+          const res = await auth.me();
+          setUser(res.user);
+          setConsentGiven(!!res.user.consent_given);
+        } catch {
+          setToken(null);
+        }
+      }
+      setLoading(false);
+    };
+    init();
   }, []);
 
+  // Déconnexion automatique après inactivité
+  const resetInactivityTimer = () => {
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    if (user) {
+      inactivityTimer.current = setTimeout(() => {
+        signOut();
+        window.location.reload();
+      }, INACTIVITY_TIMEOUT_MS);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll', 'mousemove'];
+    events.forEach((e) => window.addEventListener(e, resetInactivityTimer));
+    resetInactivityTimer();
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetInactivityTimer));
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    };
+  }, [user]);
+
   const signIn = async (email: string, password: string) => {
-    await new Promise((r) => setTimeout(r, 300));
-    const users = readUsers();
-    const normalized = email.trim().toLowerCase();
-    const found = users.find((u) => u.email.toLowerCase() === normalized);
-    if (!found) {
-      return { error: { message: 'Invalid login credentials' } };
+    try {
+      const res = await auth.login(email, password);
+      setToken(res.token);
+      setUser(res.user);
+      return { error: null };
+    } catch (err: any) {
+      return { error: { message: err.message || 'Identifiants invalides' } };
     }
-    if (found.password !== password) {
-      return { error: { message: 'Invalid login credentials' } };
-    }
-    const { password: _pw, ...publicUser } = found;
-    writeSession(publicUser);
-    setUser(publicUser);
-    return { error: null };
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    await new Promise((r) => setTimeout(r, 300));
-    const users = readUsers();
-    const normalized = email.trim().toLowerCase();
-    if (users.some((u) => u.email.toLowerCase() === normalized)) {
-      return { error: { message: 'User already registered' } };
+    try {
+      const res = await auth.signup(email, password, fullName);
+      setToken(res.token);
+      setUser(res.user);
+      return { error: null };
+    } catch (err: any) {
+      return { error: { message: err.message || 'Erreur à l\'inscription' } };
     }
-    const newUser: StoredUser = {
-      id: genId(),
-      email: normalized,
-      password,
-      user_metadata: { full_name: fullName || '' },
-      created_at: new Date().toISOString(),
-    };
-    users.push(newUser);
-    writeUsers(users);
-    const { password: _pw, ...publicUser } = newUser;
-    writeSession(publicUser);
-    setUser(publicUser);
-    return { error: null };
   };
 
   const signInWithGoogle = async (email: string, fullName?: string) => {
-    await new Promise((r) => setTimeout(r, 400));
-    const normalized = (email || '').trim().toLowerCase();
-    if (!normalized || !normalized.includes('@')) {
-      return { error: { message: 'Courriel Google invalide' } };
+    try {
+      const res = await auth.signup(email, 'google_oauth_' + Date.now(), fullName);
+      setToken(res.token);
+      setUser(res.user);
+      return { error: null };
+    } catch (err: any) {
+      return { error: { message: err.message || 'Erreur connexion Google' } };
     }
-    const users = readUsers();
-    let existing = users.find((u) => u.email.toLowerCase() === normalized);
-    if (!existing) {
-      existing = {
-        id: genId(),
-        email: normalized,
-        password: '__google_oauth__',
-        user_metadata: { full_name: fullName || normalized.split('@')[0] },
-        created_at: new Date().toISOString(),
-      };
-      users.push(existing);
-      writeUsers(users);
-    } else if (fullName && !existing.user_metadata.full_name) {
-      existing.user_metadata.full_name = fullName;
-      writeUsers(users);
-    }
-    const { password: _pw, ...publicUser } = existing;
-    writeSession(publicUser);
-    setUser(publicUser);
-    return { error: null };
   };
 
-
   const signOut = async () => {
-    writeSession(null);
+    setToken(null);
     setUser(null);
+    setConsentGiven(false);
+  };
+
+  const giveConsent = async () => {
+    if (!user) return;
+    try {
+      await auth.consent(user.id, true);
+      setConsentGiven(true);
+    } catch { /* ignore */ }
   };
 
   const session = user ? { user } : null;
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signInWithGoogle, signOut, consentGiven, giveConsent }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,13 +6,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PlanProvider } from "@/contexts/PlanContext";
-import { ServiceHealthProvider } from "@/contexts/ServiceHealthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SharedIntervention from "./pages/SharedIntervention";
 import StatusPage from "./pages/StatusPage";
 import DomainHelp from "./pages/DomainHelp";
-import DomainWarningBanner from "@/components/DomainWarningBanner";
+import PrivacyConsentBanner from "@/components/PrivacyConsentBanner";
 
 
 const queryClient = new QueryClient();
@@ -22,23 +21,20 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <PlanProvider>
-          <ServiceHealthProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <DomainWarningBanner />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/status" element={<StatusPage />} />
-                  <Route path="/aide-domaine" element={<DomainHelp />} />
-
-                  <Route path="/share/:id" element={<SharedIntervention />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </ServiceHealthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/status" element={<StatusPage />} />
+                <Route path="/aide-domaine" element={<DomainHelp />} />
+                <Route path="/share/:id" element={<SharedIntervention />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <PrivacyConsentBanner />
+            </BrowserRouter>
+          </TooltipProvider>
         </PlanProvider>
       </AuthProvider>
     </QueryClientProvider>
