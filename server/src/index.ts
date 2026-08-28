@@ -22,9 +22,14 @@ app.use('/api/ai', aiRoutes);
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // Init DB then start
-initDb();
-app.listen(PORT, () => {
-  console.log(`Serveur IntervenIA démarré sur le port ${PORT}`);
-});
+try {
+  initDb();
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Serveur IntervenIA démarré sur le port ${PORT}`);
+  });
+} catch (err) {
+  console.error('ERREUR DÉMARRAGE:', err);
+  process.exit(1);
+}
 
 export default app;
