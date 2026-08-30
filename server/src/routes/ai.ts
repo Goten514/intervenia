@@ -3,6 +3,16 @@ import { logAudit } from '../db/schema.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
+
+router.get('/debug', (_req, res) => {
+  res.json({
+    hasKey: !!ADEMI_AI_KEY,
+    keyPrefix: ADEMI_AI_KEY ? ADEMI_AI_KEY.slice(0, 12) + '...' : 'MANQUANT',
+    aiUrl: AI_BASE_URL,
+    nodeVersion: process.version,
+  });
+});
+
 router.use(requireAuth);
 
 const ADEMI_AI_KEY = process.env.ADEMI_AI_KEY || '';
@@ -37,6 +47,11 @@ Assure-toi que chaque outil soit adapté au niveau de développement, basé sur 
 
 router.post('/generate', async (req: Request, res: Response) => {
   try {
+    if (!ADEMI_AI_KEY) {
+      res.status(500).json({ error: 'Clé AI non configurée (ADEMI_AI_KEY)' });
+      return;
+    }
+
     const { age, problematique, contexte, objectif, type } = req.body;
     if (!age || !problematique) {
       res.status(400).json({ error: 'Âge et problématique requis' });
@@ -67,17 +82,20 @@ router.post('/generate', async (req: Request, res: Response) => {
         temperature: 0.7,
         max_tokens: 4096,
       }),
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!aiRes.ok) {
       const body = await aiRes.text().catch(() => '');
-      res.status(502).json({ error: `Erreur API IA (${aiRes.status})` });
+      console.error('Ademi API error:', aiRes.status, body);
+      res.status(502).json({ error: `Erreur API IA (${aiRes.status}): ${body.slice(0, 200)}` });
       return;
     }
 
     const data: any = await aiRes.json();
     const content = data?.choices?.[0]?.message?.content;
     if (!content) {
+      console.error('Ademi empty response:', JSON.stringify(data).slice(0, 500));
       res.status(502).json({ error: 'Réponse vide de l\'IA' });
       return;
     }
@@ -97,6 +115,7 @@ router.post('/generate', async (req: Request, res: Response) => {
     logAudit(req.user!.userId, 'generate', 'intervention', undefined, req.ip);
     res.json({ intervention });
   } catch (err: any) {
+    console.error('AI generate error:', err.message);
     res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 });
