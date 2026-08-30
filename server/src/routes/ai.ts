@@ -18,6 +18,31 @@ router.use(requireAuth);
 const ADEMI_AI_KEY = process.env.ADEMI_AI_KEY || '';
 const AI_BASE_URL = 'https://ademi.ai/api/ai/v1';
 
+async function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function callAI(body: any, retries = 3): Promise<Response> {
+  let lastRes: Response | null = null;
+  for (let i = 0; i < retries; i++) {
+    const res = await fetch(`${AI_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ADEMI_AI_KEY}`,
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(60000),
+    });
+    if (res.status !== 429) return res;
+    lastRes = res;
+    const wait = Math.pow(2, i + 1) * 1000;
+    console.log(`Rate limited (429), retry in ${wait}ms...`);
+    await delay(wait);
+  }
+  return lastRes!;
+}
+
 function anonymize(params: { age: string; problematique: string; contexte?: string; objectif?: string; type?: string }) {
   const result: Record<string, string> = { ...params };
   const age = parseInt(params.age);
@@ -67,28 +92,28 @@ router.post('/generate', async (req: Request, res: Response) => {
       anonymized.contexte ? `Contexte : ${anonymized.contexte}` : '',
     ].filter(Boolean).join('\n');
 
-    const aiRes = await fetch(`${AI_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${ADEMI_AI_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'qwen/qwen3-8b',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 4096,
-      }),
-      signal: AbortSignal.timeout(30000),
+    const aiRes = await callAI({
+      model: 'qwen/qwen3-8b',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 4096,
     });
 
     if (!aiRes.ok) {
       const body = await aiRes.text().catch(() => '');
-      console.error('Ademi API error:', aiRes.status, body);
-      res.status(502).json({ error: `Erreur API IA (${aiRes.status}): ${body.slice(0, 200)}` });
+      console.error('Ademi AI error:', aiRes.status, body.slice(0, 500));
+      if (aiRes.status === 429) {
+        res.status(429).json({ error: 'Limite de requêtes IA atteinte. Réessaie dans quelques secondes.' });
+        return;
+      }
+      if (aiRes.status === 402 || aiRes.status === 403) {
+        res.status(402).json({ error: 'Crédits IA épuisés. Recharge ton portefeuille Ademi pour continuer.' });
+        return;
+      }
+      res.status(502).json({ error: `Erreur API IA (${aiRes.status})` });
       return;
     }
 
