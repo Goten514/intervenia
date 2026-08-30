@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://intervenia-production.up.railway.app/api';
 
 let _token: string | null = localStorage.getItem('intervenia:token');
 
