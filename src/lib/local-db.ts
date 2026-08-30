@@ -43,15 +43,20 @@ function chain(getRows: () => any[], useApi?: boolean) {
   let limitN: number | null = null;
   let sortDesc = true;
 
-  const apply = () => {
-    let rows = getRows();
+  const apply = async () => {
+    let rows = await getRows();
     for (const f of filters) rows = rows.filter(f);
     rows = [...rows].sort(sortDesc ? (a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime() : (a: any, b: any) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
     if (limitN != null) rows = rows.slice(0, limitN);
     return rows;
   };
 
-  const p: any = { then: (res: any, rej: any) => Promise.resolve({ data: apply(), error: null }).then(res, rej) };
+  const p: any = { then: async (res: any, rej: any) => {
+    try {
+      const result = await apply();
+      return Promise.resolve({ data: result, error: null }).then(res, rej);
+    } catch { return Promise.resolve({ data: [], error: null }).then(res, rej); }
+  }};
   p.eq = (f: string, v: any) => { filters.push((r) => r[f] === v); return p; };
   p.neq = (f: string, v: any) => { filters.push((r) => r[f] !== v); return p; };
   p.not = (f: string, _op: string, v: any) => { filters.push((r) => r[f] !== v); return p; };
@@ -60,8 +65,8 @@ function chain(getRows: () => any[], useApi?: boolean) {
   p.limit = (n: number) => { limitN = n; return p; };
 
   Object.defineProperty(p, 'count', { get: () => { let rows = getRows(); for (const f of filters) rows = rows.filter(f); return rows.length; } });
-  p.maybeSingle = async () => ({ data: apply()[0] || null, error: null });
-  p.single = async () => ({ data: apply()[0] || null, error: null });
+  p.maybeSingle = async () => ({ data: (await apply())[0] || null, error: null });
+  p.single = async () => ({ data: (await apply())[0] || null, error: null });
   return p;
 }
 

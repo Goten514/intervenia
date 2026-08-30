@@ -596,14 +596,14 @@ const InterventionGenerator: React.FC<Props> = ({ onUpgrade, initialDossier, onD
     try {
       if (lastSavedId) {
         // Demote the existing record to a draft (and persist current edits).
-        const { error } = await supabase
+        const { error } = await db
           .from('interventions')
           .update({ is_draft: true, titre: result.titre || 'Sans titre', contenu: result })
           .eq('id', lastSavedId)
           .eq('user_id', user.id);
         if (error) throw error;
       } else {
-        const { data: inserted, error } = await supabase
+        const { data: inserted, error } = await db
           .from('interventions')
           .insert({
             user_id: user.id,
@@ -688,7 +688,7 @@ const InterventionGenerator: React.FC<Props> = ({ onUpgrade, initialDossier, onD
     }
     setSavingEdits(true);
     try {
-      await supabase
+      await db
         .from('interventions')
         .update({
           titre: result.titre || 'Sans titre',
