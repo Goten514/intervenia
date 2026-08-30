@@ -78,23 +78,25 @@ function insertResult(row: any) {
 
 function makeTable(table: string) {
   const api = getAPI(table);
+  
+  async function fetchRows(): Promise<any[]> {
+    if (!api) return readLocal(table);
+    try { return await api.list(); }
+    catch { return readLocal(table); }
+  }
+
   return {
-    select: (_cols?: string, _opts?: any) => {
-      if (api) return chain(() => { throw new Error('use eq'); }); // will use eq below
-      return chain(() => readLocal(table));
-    },
+    select: (_cols?: string, _opts?: any) => chain(fetchRows),
     insert: async (record: any) => {
+      const item = { ...record, ...(!record.id && { id: genId() }), ...(!record.created_at && { created_at: new Date().toISOString() }) };
       if (api) {
-        try {
-          const rows = await api.create(record);
-          return insertResult(rows[0] || record);
-        } catch { /* fallback local */ }
+        try { const rows = await api.create(item); return insertResult(rows[0] || item); }
+        catch (e) { console.warn('API insert failed, fallback local:', e); }
       }
       const items = readLocal(table);
-      const newRow = { ...record, id: record.id || genId(), created_at: record.created_at || new Date().toISOString() };
-      items.push(newRow);
+      items.push(item);
       writeLocal(table, items);
-      return insertResult(newRow);
+      return insertResult(item);
     },
     update: (updates: any) => {
       const filters: Filter[] = [];
