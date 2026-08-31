@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import UserMenu from './UserMenu';
 
-const LOGO_URL = 'https://d64gsuwffb70l.cloudfront.net/6a1239d51c177f23b96999b8_1780137517404_ab5848bc.png';
-
 
 interface NavbarProps {
   onNavigate: (section: string) => void;
@@ -39,11 +37,11 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, onAuthClick })
         <button
           onClick={() => handleClick('home')}
           className="group flex items-center transition-opacity hover:opacity-90"
-          aria-label="InterventIA - Accueil"
+          aria-label="IntervenIA - Accueil"
         >
           <img
-            src={LOGO_URL}
-            alt="InterventIA"
+            src="/logo.svg"
+            alt="IntervenIA"
             className="h-16 w-auto object-contain object-left sm:h-20 lg:h-24"
             style={{ maxWidth: '360px' }}
           />

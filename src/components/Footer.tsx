@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
-const LOGO_URL = 'https://d64gsuwffb70l.cloudfront.net/6a1239d51c177f23b96999b8_1780137517404_ab5848bc.png';
-
 interface FooterProps {
   onNavigate: (section: string) => void;
 }
@@ -108,11 +106,11 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <button
               onClick={() => onNavigate('home')}
               className="flex items-center transition-opacity hover:opacity-90"
-              aria-label="InterventIA - Accueil"
+              aria-label="IntervenIA - Accueil"
             >
               <img
-                src={LOGO_URL}
-                alt="InterventIA"
+                src="/logo.svg"
+                alt="IntervenIA"
                 className="h-20 w-auto object-contain object-left sm:h-24"
                 style={{ maxWidth: '360px', filter: 'brightness(1.05)' }}
               />

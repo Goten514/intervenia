@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 56" width="280" height="56">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="6" width="44" height="44" rx="11" ry="11" fill="url(#g)"/>
+  <text x="26" y="37" font-family="'Inter Tight','Inter',system-ui,sans-serif" font-size="29" font-weight="800" fill="white" text-anchor="middle">i</text>
+  <text x="60" y="38" font-family="'Inter Tight','Inter',system-ui,sans-serif" font-size="27" font-weight="700" fill="#1E293B">Interven</text>
+  <text x="198" y="38" font-family="'Inter Tight','Inter',system-ui,sans-serif" font-size="27" font-weight="800" fill="url(#g)">IA</text>
+</svg>
