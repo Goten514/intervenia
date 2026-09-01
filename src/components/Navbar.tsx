@@ -41,9 +41,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, onAuthClick })
         >
           <img
             src="/logo.svg"
-            alt="IntervenIA"
-            className="h-16 w-auto object-contain object-left sm:h-20 lg:h-24"
-            style={{ maxWidth: '360px' }}
+            alt="IntervenIA — L'intervention augmentée par l'IA"
+            className="h-12 w-auto object-contain object-left sm:h-14 lg:h-16"
+            style={{ maxWidth: '300px' }}
           />
         </button>
 

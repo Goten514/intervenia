@@ -109,10 +109,10 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               aria-label="IntervenIA - Accueil"
             >
               <img
-                src="/logo.svg"
-                alt="IntervenIA"
-                className="h-20 w-auto object-contain object-left sm:h-24"
-                style={{ maxWidth: '360px', filter: 'brightness(1.05)' }}
+                src="/logo-white.svg"
+                alt="IntervenIA — L'intervention augmentée par l'IA"
+                className="h-16 w-auto object-contain object-left sm:h-20"
+                style={{ maxWidth: '320px' }}
               />
             </button>
 

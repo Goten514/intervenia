@@ -1,10 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <defs>
     <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#4F46E5"/>
       <stop offset="100%" style="stop-color:#7C3AED"/>
     </linearGradient>
   </defs>
-  <rect x="4" y="4" width="40" height="40" rx="10" ry="10" fill="url(#g)"/>
-  <text x="24" y="32" font-family="'Inter','Inter Tight',system-ui,sans-serif" font-size="28" font-weight="800" fill="white" text-anchor="middle">i</text>
+  <rect x="0" y="0" width="64" height="64" rx="16" ry="16" fill="url(#g)"/>
+  <!-- halo protecteur -->
+  <path d="M11 44 A22 22 0 1 1 53 44" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2.8" stroke-linecap="round"/>
+  <!-- personne -->
+  <circle cx="32" cy="27" r="6" fill="#ffffff"/>
+  <path d="M32 36 c-6 0 -10 5 -10 10 v3.5 h20 v-3.5 c0-5 -4-10 -10-10 z" fill="#ffffff"/>
+  <!-- mains soutenantes -->
+  <path d="M19 53 q13 7 26 0" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+  <!-- noeuds neuronaux -->
+  <circle cx="51" cy="21" r="3" fill="#ffffff"/>
+  <circle cx="56" cy="32" r="2.2" fill="#ffffff"/>
+  <path d="M50.3 23.7 L55.3 30.2" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M39.5 20.5 L47.5 20.8" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- étincelle -->
+  <path d="M53 7.5 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4-3 -3-1.4 3-1.4 z" fill="#ffffff"/>
 </svg>
